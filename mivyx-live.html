@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0b16">
+<title>Mivyx Hub – Live</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<!--
+  MIVYX LIVE LOADER
+  Open this file (or install an app) and it downloads the newest hub from your GitHub Pages site every time it starts.
+  No internet? It plays the last copy it saved. Used inside the APK / EXE / Linux / iOS apps too.
+  Pointed at Mivyx-Femboy/Mivyx_arcade. To use another repository, change DEFAULT_REPO below, or type it in when it asks.
+-->
+<style>
+:root{--bg:#0a0b16;--ac:#9aa5ff;--tx:#f0f2fa;--mu:#8389a3;--bd:rgba(255,255,255,.09);--ok:#7ee2a8;--warn:#ffd479;--bad:#ff7597}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{display:grid;place-items:center;padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));color:var(--tx);font:15px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(60% 50% at 15% 8%,rgba(154,165,255,.17),transparent),radial-gradient(50% 45% at 90% 95%,rgba(137,87,229,.12),transparent),var(--bg)}
+main{width:min(440px,100%)}
+.mark{width:56px;height:56px;margin-bottom:18px}
+h1{margin:0;font-size:30px;font-weight:800;letter-spacing:.01em}
+#sub{margin:4px 0 22px;color:var(--mu);font:13px ui-monospace,"SF Mono",Menlo,Consolas,monospace;word-break:break-all}
+.bar{height:3px;border-radius:3px;background:var(--bd);overflow:hidden;margin-bottom:18px}
+.bar i{display:block;height:100%;width:38%;border-radius:3px;background:linear-gradient(90deg,transparent,var(--ac));animation:run 1.15s ease-in-out infinite}
+@keyframes run{from{transform:translateX(-110%)}to{transform:translateX(280%)}}
+@media (prefers-reduced-motion:reduce){.bar i{animation:none;width:100%}}
+#log{list-style:none;margin:0;padding:0;font:13px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+#log .ok{color:var(--ok)}#log .warn{color:var(--warn)}#log .bad{color:var(--bad)}
+form,.box{margin-top:18px;padding:16px;border:1px solid var(--bd);border-radius:14px;background:rgba(255,255,255,.03)}
+label{display:block;margin-bottom:8px;color:var(--mu);font-size:13px}
+input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--bd);background:rgba(0,0,0,.3);color:var(--tx);font:14px ui-monospace,Menlo,Consolas,monospace}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+button,.btn{padding:10px 16px;border-radius:10px;border:1px solid var(--ac);background:#1e224b;color:var(--ac);font:600 14px inherit;font-family:inherit;cursor:pointer;text-decoration:none}
+button.ghost{border-color:var(--bd);background:transparent;color:var(--mu)}
+[hidden]{display:none!important}
+small{display:block;margin-top:22px;color:var(--mu);font-size:12px}
+</style>
+</head>
+<body>
+<main>
+ <svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#12142a"/><path d="M19 45V20l13 15 13-15v25" fill="none" stroke="#9aa5ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+ <h1>Mivyx Hub</h1>
+ <p id="sub">Starting…</p>
+ <div class="bar" id="bar"><i></i></div>
+ <ul id="log" aria-live="polite"></ul>
+
+ <form id="setup" hidden>
+  <label for="repo">Your GitHub repository (username/repository)</label>
+  <input id="repo" placeholder="your-name/your-repo" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <div class="row"><button type="submit">Connect</button></div>
+ </form>
+
+ <div class="box" id="upd" hidden>
+  <div id="upd-t"></div>
+  <div class="row"><a class="btn" id="upd-a" href="#" target="_blank" rel="noopener">Get the new app</a><button class="ghost" id="go" type="button">Continue</button></div>
+ </div>
+
+ <div class="row" id="fail" hidden><button id="retry" type="button">Try again</button><button class="ghost" id="change" type="button">Change repository</button></div>
+ <small id="ver"></small>
+ <noscript>This page needs JavaScript.</noscript>
+</main>
+<script>
+(()=>{
+const DEFAULT_REPO='Mivyx-Femboy/Mivyx_arcade';
+/* filled in automatically when the apps are built – leave as is */
+const SHELL={platform:'__SHELL_PLATFORM__',version:'__SHELL_VERSION__'};
+
+const $=s=>document.querySelector(s);
+const store={get:k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const log=(t,c)=>{const li=document.createElement('li');li.textContent=t;if(c)li.className=c;$('#log').appendChild(li);return li};
+const mark=(li,t,c)=>{li.textContent=t;li.className=c||''};
+
+/* tiny key-value store (IndexedDB) that keeps the last good copy of the hub for offline use */
+const idb=()=>new Promise((ok,no)=>{const q=indexedDB.open('mivyx-live',1);q.onupgradeneeded=()=>q.result.createObjectStore('kv');q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)});
+const kv={
+ async get(k){try{const d=await idb();return await new Promise(r=>{const q=d.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null)})}catch(e){return null}},
+ async set(k,v){try{const d=await idb();await new Promise(r=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=r;t.onerror=r;t.onabort=r})}catch(e){}}
+};
+
+const OK_REPO=/^[\w.-]+\/[\w.-]+$/;
+function findRepo(){
+ const q=new URLSearchParams(location.search).get('repo');if(q&&OK_REPO.test(q))store.set('mvxRepo',q);
+ let r=(q&&OK_REPO.test(q)&&q)||store.get('mvxRepo');
+ if(!r){const m=location.hostname.match(/^([^.]+)\.github\.io$/);
+  if(m){const p=location.pathname.split('/')[1];r=m[1]+'/'+(p&&!/\.html?$/i.test(p)?p:m[1]+'.github.io')}}
+ if(!r&&!/^YOUR-/.test(DEFAULT_REPO))r=DEFAULT_REPO;
+ return OK_REPO.test(r||'')?r:null}
+const pagesUrl=r=>{const[o,n]=r.split('/');return n.toLowerCase()===o.toLowerCase()+'.github.io'?`https://${o}.github.io/`:`https://${o}.github.io/${n}/`};
+const ver=h=>(h.match(/HUB_VERSION\s*=\s*'([^']+)'/)||[])[1]||'';
+const newer=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<3;i++){if((x[i]||0)!==(y[i]||0))return(x[i]||0)>(y[i]||0)}return false};
+
+async function getText(url,ms){
+ const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);
+ try{const r=await fetch(url,{cache:'no-cache',signal:c.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text()}
+ finally{clearTimeout(t)}}
+
+async function appUpdate(r){
+ if(!/^(android|ios)$/.test(SHELL.platform)||!/^\d/.test(SHELL.version))return null;
+ try{const j=JSON.parse(await getText(`https://api.github.com/repos/${r}/releases/latest`,5000));
+  const v=String(j.tag_name||'').replace(/^v/,'');return v&&newer(v,SHELL.version)?{v,url:j.html_url}:null}catch(e){return null}}
+
+function boot(html,base){
+ const tag=`<base href="${base}">`;
+ html=/<head[^>]*>/i.test(html)?html.replace(/<head[^>]*>/i,m=>m+tag):tag+html;
+ document.open();document.write(html);document.close()}
+
+const isAdmin=h=>/<body[^>]*data-instance-type="admin"/i.test(h);
+const looksOk=h=>/Mivyx/i.test(h)&&/<\/html>\s*$/i.test(h.trim());
+
+async function start(){
+ $('#log').innerHTML='';['#setup','#upd','#fail'].forEach(s=>$(s).hidden=true);$('#bar').hidden=false;
+ const r=findRepo();
+ if(!r){$('#sub').textContent='Connect your GitHub repository';$('#bar').hidden=true;$('#setup').hidden=false;$('#repo').focus();return}
+ const base=pagesUrl(r);$('#sub').textContent=r;
+ $('#ver').textContent=(SHELL.version&&/^\d/.test(SHELL.version)?'App v'+SHELL.version+' · ':'')+'Live from '+base.replace('https://','');
+
+ const li=log('… Checking GitHub for the newest hub');
+ let html=null,live=false,why='';
+ try{
+  const t=await getText(base+'index.html',9000);
+  if(isAdmin(t))why='the file on GitHub is the ADMIN version – upload the Public export';
+  else if(!looksOk(t))why='index.html on GitHub is not a Mivyx hub file';
+  else{html=t;live=true}
+ }catch(e){why=e.name==='AbortError'?'no connection (timed out)':e.message}
+
+ if(live){await kv.set('hub:'+r,{html,t:Date.now()});mark(li,'✓ Newest hub loaded'+(ver(html)?' (v'+ver(html)+')':''),'ok')}
+ else{
+  const c=await kv.get('hub:'+r);
+  if(c&&c.html){html=c.html;mark(li,'! '+why+' – using your last saved copy ('+new Date(c.t).toLocaleDateString()+')','warn')}
+  else{try{const f=await getText('hub-fallback.html',4000);if(looksOk(f)){html=f;mark(li,'! '+why+' – using the copy built into this app','warn')}}catch(e){}}
+ }
+ if(!html){mark(li,'✗ Could not load the hub: '+why,'bad');$('#bar').hidden=true;$('#fail').hidden=false;return}
+
+ const u=live&&await appUpdate(r);
+ if(u){
+  $('#upd-t').textContent='A new version of this app (v'+u.v+') is available.';$('#upd-a').href=u.url;$('#upd').hidden=false;
+  await new Promise(done=>{let n=6;const tick=()=>{$('#go').textContent='Continue ('+n+')'};tick();
+   const t=setInterval(()=>{n--;tick();if(n<1){clearInterval(t);done()}},1000);
+   $('#go').onclick=()=>{clearInterval(t);done()}})}
+ boot(html,base)}
+
+$('#setup').onsubmit=e=>{e.preventDefault();
+ const v=$('#repo').value.trim().replace(/^https?:\/\/github\.com\//i,'').replace(/\.git$/i,'').replace(/\/+$/,'');
+ if(!OK_REPO.test(v)){$('#sub').textContent='Type it like this:  username/repository';return}
+ store.set('mvxRepo',v);start()};
+$('#retry').onclick=start;
+$('#change').onclick=()=>{store.set('mvxRepo','');start()};
+start();
+})();
+</script>
+</body>
+</html>

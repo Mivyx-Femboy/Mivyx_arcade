@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 178" width="480" height="178" role="img" aria-label="Android download">
+<rect x="1.5" y="1.5" width="477" height="175" rx="10" fill="#0d1117" stroke="#8957e5" stroke-width="2"/>
+<g transform="translate(28 22)"><path d="M4 22a10 10 0 0 1 20 0z" fill="#3DDC84"/><path d="M8 7l3 4M20 7l-3 4" stroke="#3DDC84" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="17" r="1.6" fill="#0d1117"/><circle cx="18" cy="17" r="1.6" fill="#0d1117"/></g>
+<text x="68" y="44" fill="#e6edf3" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="25" font-weight="600">Android</text>
+<rect x="401" y="24" width="51" height="28" rx="14" fill="none" stroke="#30363d"/>
+<text x="426" y="43" text-anchor="middle" fill="#8b949e" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14">APK</text>
+<text x="28" y="86" fill="#8b949e" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="15.5">Install the .apk on your phone or tablet. The</text><text x="28" y="109" fill="#8b949e" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="15.5">hub inside refreshes itself from GitHub every</text><text x="28" y="132" fill="#8b949e" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="15.5">launch.</text>
+<circle cx="34" cy="154" r="5" fill="#3fb950"/>
+<text x="46" y="159" fill="#8b949e" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14">Mivyx-Hub.apk</text>
+<text x="452" y="159" text-anchor="end" fill="#a371f7" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="15" font-weight="600">Download</text>
+</svg>

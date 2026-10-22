@@ -1,0 +1,7 @@
+{
+  "appId": "com.mivyx.hub",
+  "appName": "Mivyx Hub",
+  "webDir": "www",
+  "backgroundColor": "#0a0b16",
+  "server": { "androidScheme": "https" }
+}
