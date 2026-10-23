@@ -74,25 +74,6 @@ If you want the real app file, use the `.ipa` with [AltStore](https://altstore.i
 
 </details>
 
-## 🔄 How it updates itself
-
-```mermaid
-flowchart LR
-  A["You export the<br>Public hub"] --> B["update.sh or<br>upload to GitHub"]
-  B --> C["GitHub Pages<br>index.html"]
-  C --> D["Browser and<br>iPhone home-screen app"]
-  C --> E["Live loader inside<br>APK, EXE and Linux"]
-  B -- "add: release" --> F["GitHub Actions builds<br>APK, EXE, Linux, iOS"]
-  F --> G["Releases page<br>(download links never change)"]
-  G --> H["Desktop app swaps<br>itself in the background"]
-```
-
-| Where you play | What updates | When |
-| --- | --- | --- |
-| Browser / iPhone home-screen app | Everything | Next time you open it |
-| Windows and Linux app | The hub inside, **and** the app itself | Hub: every start. App: downloaded in the background |
-| Android app | The hub inside | Every start. When a new APK exists the app shows a banner with a download button |
-| `mivyx-live.html` | Everything | Every time you open the file |
 
 ## 🎵 Base music: what you need to do
 
@@ -135,26 +116,3 @@ Open the **Actions** tab. **Check music list** shows a green ✓ when every song
 
 </details>
 
-## 🛠 Update the hub
-
-**Easiest (browser).** Export again from the hub with **📤 Export Single File (Public)**. Open the repo, click `index.html`, then **✏️ / Upload** and replace it with the new export (renamed `index.html`), then **Commit**. Live in about a minute.
-
-**One command.**
-
-```bash
-bash update.sh "Exported Hub.html" "added new games"
-```
-
-**New app files too (APK, EXE, Linux, iOS).** Raise `HUB_VERSION` in the hub, export, then add `release`:
-
-```bash
-bash update.sh "Exported Hub.html" "version 2.1.0" release
-```
-
-The builds appear under **Releases** in about 15 minutes and the download buttons above keep working.
-
-> ⚠️ **Never upload the admin file.** Only the **Public** export belongs on GitHub. The build refuses to run if `index.html` is the admin version, and `.gitignore` skips any file with `admin` in its name.
-
-First time here? Follow **[docs/SETUP.md](docs/SETUP.md)** (about 10 minutes, no command line needed).
-
-<p align="center"><sub><code>[ Mivyx Gaming Hub · built to update itself ]</code></sub></p>
